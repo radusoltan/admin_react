@@ -15,29 +15,26 @@ export const Login = () => {
     dispatch(loginUser(values))
   }
 
-  useEffect(()=>{
-    return ()=>{
-      dispatch(clearState())
-    }
-  },[])
+  useEffect(()=>dispatch(clearState()),[])
 
   useEffect(()=>{
 
     if (isError){
-      console.log(errorMessage)
-      dispatch(clearState)
+      
+      dispatch(clearState())
       toast.error(errorMessage);
     }
 
     if (isSuccess){
-      dispatch(clearState())
+      // dispatch(clearState())
       navigate('/')
     }
     
   },[isError, isSuccess, isFetching])
-if (isFetching) {
-  return <Spin />;
-}
+
+  if (isFetching) {
+    return <Spin />;
+  }
 
   return (
     <>

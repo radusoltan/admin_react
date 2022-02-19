@@ -9,7 +9,6 @@ export default configureStore({
   },
   middleware: getDefaultMiddleware => getDefaultMiddleware()
     .concat([
-      // userSLice.middleware,
-      categoryApi.middleware
+      categoryApi.middleware,
     ])
 })
