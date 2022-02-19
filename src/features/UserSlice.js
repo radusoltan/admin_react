@@ -1,11 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import axios from './../lib/axios'
-import Cookies from 'universal-cookie'
-// console.log(axios)
-const csrf = () => axios.get('/sanctum/csrf-cookie')
-// import axios from 'axios'
-// const csrf = async () => await axios.get('sanctum/csrf-cookie')
-const cookies = new Cookies()
+import cookies from '../lib/cookies'
+
+const csrf = async () => axios.get('/sanctum/csrf-cookie')
+
+
+
 export const loginUser = createAsyncThunk(
   'user/login',
   async ({email, password},thunkAPI) => {
@@ -24,11 +24,7 @@ export const loginUser = createAsyncThunk(
       
       return thunkAPI.rejectWithValue(e)
       
-    }
-    // axios.get('/sanctum/csrf-cookie').then(response=>{
-    
-    // })
-    
+    }    
   }
 )
 
@@ -43,10 +39,10 @@ export const fetchLoggedUser = createAsyncThunk(
         },
       });
 
-      if (response.status === 200){
-        return response.data.user
+      if (response.status === 200) {        
+        return response.data;
       } else {
-        return thunkAPI.rejectWithValue(response)
+        return thunkAPI.rejectWithValue('response');
       }
 
     } catch (e){
@@ -66,10 +62,11 @@ export const logoutUser = createAsyncThunk(
       })
 
       if (response.status === 204){
-        if (cookies.get("XSRF-TOKEN")){
-          cookies.remove('laravel_session')
-          cookies.remove("XSRF-TOKEN")
-        }          
+        // if (cookies.get("XSRF-TOKEN")){
+          // cookies.remove('laravel_session')
+          // cookies.remove("XSRF-TOKEN")
+
+        // }          
         return true
       } else {
         return thunkAPI.rejectWithValue(response)
@@ -90,7 +87,7 @@ export const userSLice = createSlice({
     isFetching: false,
     isSuccess: false,
     isError: false,
-    errorMessage: ''
+    errorMessage: '',
   },
   reducers: {
     clearState: state => {
@@ -126,27 +123,36 @@ export const userSLice = createSlice({
       state.isFetching = true
     },
     [fetchLoggedUser.fulfilled]: (state,{payload})=>{
-      
-      state.username = payload.name
-      state.email = payload.email
+      // console.log(payload)
+      state.username = payload.user.name
+      state.email = payload.user.email
       state.isFetching = false
       state.isSuccess = true
+      state.permissions = payload.permissions
       return state
     },
-    [fetchLoggedUser.rejected]: (state,{payload})=>{
-
+    [fetchLoggedUser.rejected]: (state)=>{
+      state.isFetching = false
+      state.isSuccess = false
+      state.isError = true
     },
     [logoutUser.pending]: state => {
       state.isFetching = true
     },
     [logoutUser.fulfilled]: (state,{payload}) => {
-      
+      state.isFetching = false
+      state.isSuccess = true
+      state.isError = false
+      state.username = ''
+      state.email = ''
+      state.errorMessage = ''
+      return state
     },
     [logoutUser.rejected]: (state,{payload}) => {
       console.log('logout User', payload)
       state.isFetching = false
       state.isError = true
-      state.errorMessage = payload.response.data.message
+      state.errorMessage = payload.response.message
     }
   }
 })

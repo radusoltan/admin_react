@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from 'react-redux'
 const MainLayout = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const {isError, isSuccess, errorMessage} = useSelector(userSelector)
+  const {isError, isSuccess, errorMessage } = useSelector(userSelector)
   const { Header, Sider, Content } = Layout
   
   const [collapsed,setCollapsed] = useState(false)
@@ -23,13 +23,11 @@ const MainLayout = () => {
     setCollapsed(!collapsed)
   }
 
-  useEffect(()=>{
-    dispatch(fetchLoggedUser())
-  },[])
+  useEffect(()=>dispatch(fetchLoggedUser()),[])
 
   useEffect(() => {
     if (isError){
-      dispatch(logoutUser())
+      // dispatch(logoutUser())
       navigate('/login')
     }
   },[isError])
