@@ -1,0 +1,13 @@
+{
+    "menu":{
+        "dashboard": "Dashboard",
+        "content": {
+            "head": "Content",
+            "categories": "Categories"
+        },
+        "management": {
+            "head": "Management",
+            "users": "Users"
+        }
+    }
+}

@@ -1,0 +1,13 @@
+{
+    "menu":{
+        "dashboard": "Panou de bord",
+        "content": {
+            "head": "Continut",
+            "categories": "Categorii"
+        },
+        "management": {
+            "head": "Management",
+            "users": "Utilizatori"
+        }
+    }
+}
