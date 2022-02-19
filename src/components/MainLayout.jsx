@@ -1,6 +1,6 @@
 import React,{useEffect, useState} from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
-import { Layout, Button} from 'antd'
+import { Outlet, useNavigate,Link } from 'react-router-dom'
+import { Layout, Button, Menu, Select} from 'antd'
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -8,16 +8,19 @@ import {
 import './../App.css'
 import { logoutUser, userSelector, fetchLoggedUser } from '../features/UserSlice'
 import { useDispatch, useSelector } from 'react-redux'
-
-
+import { useTranslation } from 'react-i18next'
+// import i18next from 'i18next'
+import i18n from './../i18n'
 
 const MainLayout = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
-  const {isError, isSuccess, errorMessage } = useSelector(userSelector)
+  const {isError, isSuccess, errorMessage} = useSelector(userSelector)
   const { Header, Sider, Content } = Layout
-  
+  const {SubMenu} = Menu
+  const {Option} = Select
   const [collapsed,setCollapsed] = useState(false)
+  const {t} = useTranslation()
   
   const toggle = () => {
     setCollapsed(!collapsed)
@@ -36,11 +39,27 @@ const MainLayout = () => {
     dispatch(logoutUser())
     navigate('/login')
   }
-
+  const changeLang = language => {
+    i18n.changeLanguage(language)
+  }
   return (
     <Layout>
       <Sider trigger={null} collapsible collapsed={collapsed}>
         <div className="logo" />
+
+        <Menu mode="inline" theme="dark">
+          <Menu.Item key="dashboard">
+            <Link to="/">{t("menu.dashboard")}</Link>
+          </Menu.Item>
+          <SubMenu key="content" title={t("menu.content.head")}>
+            <Menu.Item key="content/ctegories">{t('menu.content.categories')}</Menu.Item>
+          </SubMenu>
+          <SubMenu key="management" title="Management">
+            <Menu.Item key="management/users">
+              <Link to="mnagement/users">Users</Link>
+            </Menu.Item>
+          </SubMenu>
+        </Menu>
       </Sider>
       <Layout className="site-layout">
         <Header className="site-layout-background" style={{ padding: 0 }}>
@@ -52,6 +71,11 @@ const MainLayout = () => {
             }
           )}
           <Button onClick={handleLogout}>Log Out</Button>
+          <Select defaultValue={i18n.language} onChange={changeLang}>
+            <Option value="ro">RO</Option>
+            <Option value="ru">RU</Option>
+            <Option value="en">EN</Option>
+          </Select>
         </Header>
         <Content
           className="site-layout-background"

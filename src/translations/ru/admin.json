@@ -1,0 +1,13 @@
+{
+    "menu":{
+        "dashboard": "Панель приборов",
+        "content": {
+            "head": "Категории",
+            "categories": "Категории"
+        },
+        "management": {
+            "head": "Управление",
+            "users": "Users"
+        }
+    }
+}
