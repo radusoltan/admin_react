@@ -9,5 +9,21 @@
             "head": "Управление",
             "users": "Users"
         }
+    },
+    "pages": {
+        "content": {
+            "categories":{
+                "index": "Категории",
+                "edit": "Редактировать",
+                "update": "Обновить",
+                "delete": "Удалить",
+                "add": "Добавить",
+                "table": {
+                    "title": "Заголовок",
+                    "in_menu": "В меню",
+                    "actions": "Действия"
+                }
+            }
+        }
     }
 }

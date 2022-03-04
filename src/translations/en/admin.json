@@ -9,5 +9,21 @@
             "head": "Management",
             "users": "Users"
         }
+    },
+    "pages": {
+        "content": {
+            "categories":{
+                "index": "Categories",
+                "edit": "Edit",
+                "update": "Update",
+                "delete": "Delete",
+                "add": "Add",
+                "table": {
+                    "title": "Title",
+                    "in_menu": "In menu",
+                    "actions": "Actions"
+                }
+            }
+        }
     }
 }

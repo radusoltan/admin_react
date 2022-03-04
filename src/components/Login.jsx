@@ -30,7 +30,7 @@ export const Login = () => {
       navigate('/')
     }
     
-  },[isError, isSuccess, isFetching])
+  },[isError, isSuccess])
 
   if (isFetching) {
     return <Spin />;

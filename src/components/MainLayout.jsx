@@ -1,5 +1,5 @@
 import React,{useEffect, useState} from 'react'
-import { Outlet, useNavigate,Link } from 'react-router-dom'
+import { Outlet, useNavigate,Link, NavLink } from 'react-router-dom'
 import { Layout, Button, Menu, Select} from 'antd'
 import {
   MenuUnfoldOutlined,
@@ -52,11 +52,15 @@ const MainLayout = () => {
             <Link to="/">{t("menu.dashboard")}</Link>
           </Menu.Item>
           <SubMenu key="content" title={t("menu.content.head")}>
-            <Menu.Item key="content/ctegories">{t('menu.content.categories')}</Menu.Item>
+            <Menu.Item key="content/categories">
+              <NavLink to="/content/categories">
+                {t("menu.content.categories")}
+              </NavLink>
+            </Menu.Item>
           </SubMenu>
           <SubMenu key="management" title="Management">
             <Menu.Item key="management/users">
-              <Link to="mnagement/users">Users</Link>
+              <Link to="management/users">{t("menu.management.users")}</Link>
             </Menu.Item>
           </SubMenu>
         </Menu>
