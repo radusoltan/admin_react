@@ -1,4 +1,7 @@
 @import '~antd/dist/antd.css';
+body {
+  margin: 0 !important;
+}
 .trigger {
     padding: 0 24px;
     font-size: 18px;
@@ -33,4 +36,13 @@
   }
   .login-form-button {
     width: 100%;
+  }
+
+  .article-buttons {
+    margin: 0 0 10px 0;
+  }
+
+  .article-buttons button {
+    margin: 0 10px 0 0;
+    float: right; 
   }

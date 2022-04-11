@@ -44,7 +44,7 @@ const MainLayout = () => {
   }
   return (
     <Layout>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
+      <Sider trigger={null} collapsible collapsed={collapsed} breakpoint="lg">
         <div className="logo" />
 
         <Menu mode="inline" theme="dark">
