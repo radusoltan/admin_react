@@ -100,7 +100,7 @@ export const Categories = () => {
     if (isSuccess){
       toast.success(`Category ${category} deleted`)
     }
-    dispatch(getAll(current_page))
+    dispatch(getAll(page))
   }
   
   const categories = paginated?.data.map(({id,translations})=>{
@@ -170,12 +170,12 @@ export const Categories = () => {
 
     if (translate){
       const { translations} = paginated.data.find(({id})=>id===categoryId)
-      return (
-        <Form
-          name="translate_category"
-          onFinish={translateCat}
-          initialValues={{
-            title: translations.find(({ locale }) => locale === 'ro')
+      return (<>
+      <Form
+        name="translate_category"
+        onFinish={translateCat}
+        initialValues={{
+        title: translations.find(({ locale }) => locale === 'ro')
               .title,
             lng: i18n.language
           }}
@@ -195,8 +195,7 @@ export const Categories = () => {
               Submit
             </Button>
           </Form.Item>
-        </Form>
-      );
+        </Form></>)
     }
     
     if (isEdit){

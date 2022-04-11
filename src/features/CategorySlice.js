@@ -129,22 +129,48 @@ export const translateCategory = createAsyncThunk(
   'category/translate',
   async ({category,lng,title},thunkAPI) => {
     await csrf()
+    try {
+      const response = await axios.post(
+        `/admin/categories/${category}/translate`,
+        {
+          title,
+          lng,
+        },
+        {
+          headers: { "XSRF-TOKEN": cookies.get("XSRF-TOKEN") },
+        }
+      );
 
-    const response = await axios.post(
-      `/admin/categories/${category}/translate`,
-      {
-        title,
-        lng,
-      },
-      {
-        headers: { "XSRF-TOKEN": cookies.get("XSRF-TOKEN") },
+      if (response.status === 200) {
+        return response.data;
+      } else {
+        return thunkAPI.rejectWithValue(response);
       }
-    );
+    } catch (e){
+      return thunkAPI.rejectWithValue(e)
+    }
+  }
+)
 
-    if (response.status===200){
-      return response.data
-    } else {
-      return thunkAPI.rejectWithValue(response)
+export const addArticle = createAsyncThunk(
+  'category/add/article',
+  async ({category,data},thunkAPI) => {
+    await csrf()
+    try {
+      const response = await axios.post(
+        `/admin/categories/${category}/new-article`,
+        data,
+        { headers: { "XSRF-TOKEN": cookies.get("XSRF-TOKEN") } }
+      );
+
+      if (response.status === 200){
+        return response.data
+      } else {
+        return thunkAPI.rejectWithValue(response)
+      }
+
+    } catch (e){
+      return thunkAPI.rejectWithValue(e)
     }
 
   }
@@ -180,12 +206,12 @@ export const updateCategory = createAsyncThunk(
 
 export const getArticles = createAsyncThunk(
   'category/articles',
-  async (category,thunkAPI) => {
+  async ({category,page},thunkAPI) => {
     try{
       await csrf()
-
+      
       const response = await axios.get(
-        `/admin/categories/${category}/articles`,
+        `/admin/categories/${category}/articles?page=${page}`,
         {
           headers: { "XSRF-TOKEN": cookies.get("XSRF-TOKEN") },
         }
@@ -209,10 +235,12 @@ export const categorySlice = createSlice({
     isFetching: false,
     isError: false,
     isSuccess: false,
+    isArticleSuccess: false,
     paginated: {},
     errorMessage: '',
     category: {},
-    paginatedArticles: {}
+    paginatedArticles: {},
+    article: {}
   },
   reducers: {},
   extraReducers: {
@@ -265,6 +293,15 @@ export const categorySlice = createSlice({
       state.isError = true
       state.isSuccess = false
       state.isFetching = false
+    },
+    [addArticle.pending]: state => {
+      state.isFetching = true
+    },
+    [addArticle.fulfilled]: (state,{payload}) => {
+      state.isFetching = false
+      state.isSuccess = true
+      state.isArticleSuccess = true
+      state.article = payload.article
     },
     [updateCategory.pending]: state => {
       state.isFetching = true
