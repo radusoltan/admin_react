@@ -54,6 +54,22 @@ export const imageApi = createApi({
         ]
         : // an error occurred, but we still want to refetch this query when `{ type: 'Posts', id: 'LIST' }` is invalidated
         [{ type: 'Image', id: 'LIST' }]
+    }),
+    setArticleMainImage: build.mutation({
+      query: ({article,image}) => ({
+        url: '/image/set-main',
+        method: "POST",
+        body: {article,image},
+        headers
+      }),
+      // invalidatesTags: result
+    }),
+    getMainArticleImage: build.query({
+      query: (article) => createRequest(`/article/${article}/main-image`),
+      // providesTags: result => console.log()
+    }),
+    getMainImageRenditions: build.query({
+      query: (image) => createRequest(`/image/${image}/renditions`)
     })
   })
 })
@@ -61,5 +77,8 @@ export const imageApi = createApi({
 export const {
   useUploadArticleImagesMutation,
   useDetachArticleImagesMutation,
-  useGetArticleImagesQuery
+  useGetArticleImagesQuery,
+  useSetArticleMainImageMutation,
+  useGetMainArticleImageQuery,
+  useGetMainImageRenditionsQuery
 } = imageApi

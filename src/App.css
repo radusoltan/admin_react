@@ -47,3 +47,23 @@
     margin: 0 10px 0 0;
     float: right;
 }
+
+.rendition-container {
+    background: #fff;
+    padding: 10px;
+    margin: 7px 6px;
+    border: #d4d4d4 solid 1px;
+    border-radius: 2px;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    box-shadow: 0 2px 0 rgb(212 212 212);
+}
+
+.image-container {
+    padding: 10px 8px;
+    border: 1px solid #000;
+    border-radius: 2px;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    box-shadow: 0 2px 0 rgb(0 0 0);
+}

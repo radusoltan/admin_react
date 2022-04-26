@@ -3,31 +3,38 @@ import { useParams } from "react-router-dom"
 import { useGetArticleQuery, useUpdateArticleMutation } from "../../../services/articles"
 import {Form, Card, Spin, Input, Row, Col, Switch, Select, Divider, Button} from 'antd'
 import i18n from "../../../i18n"
-import { Editor } from '@tinymce/tinymce-react'
 import { BodyEditor } from "./editor"
 import { ArticleImages } from "../images/articleImages"
 import { useGetArticleImagesQuery } from "../../../services/images"
+
 export const ArticleFrom = (props) => {
 
   const [form] = Form.useForm()
   const {article} = useParams()
   const { TextArea } = Input;
   const {data,isLoading,isSuccess} = useGetArticleQuery(article)
-  const {data:images} = useGetArticleImagesQuery(article)
+  const {data:images,isSuccess: imagesSuccess} = useGetArticleImagesQuery(article)
   const [updateArticle] = useUpdateArticleMutation()
   const [articleBody,setArticleBody] = useState()
-  const [articleImages,setArticleImages] = useState()
+  const [articleImages,setArticleImages] = useState([])
   const onFinish = vals => {
     console.log('article form vals', vals)
   }
 
   useEffect(()=>{
     if (isSuccess){
-      const { id, is_alert, is_breaking, is_flash, status, translations } = data
-      const { title, lead, body } = translations.find(({ locale }) => locale === i18n.language)
+      const { translations } = data
+      const { body } = translations.find(({ locale }) => locale === i18n.language)
       setArticleBody(body)
     }
-  },[isSuccess])
+
+    if (imagesSuccess) {
+      setArticleImages(
+        images.map(({id})=>(id))
+      )
+    }
+
+  },[isSuccess, imagesSuccess])
 
   if (isLoading){
     return <Spin />
@@ -35,7 +42,9 @@ export const ArticleFrom = (props) => {
   
   const {id,is_alert,is_breaking,is_flash,status, translations} = data
 
-  const {title,lead,body} = translations.find(({locale})=>locale===i18n.language)
+  const {title,lead} = translations.find(({locale})=>locale===i18n.language)
+  
+  console.log('_form articleImages',articleImages)
 
   return <Card extra={<>
     <Button onClick={()=>{
@@ -44,7 +53,13 @@ export const ArticleFrom = (props) => {
         validateFields()
         .then(values=>{
           
-          updateArticle({id:article,body:{...values,articleBody,lng:i18n.language}})
+          updateArticle({
+            id:article,
+            body:{
+              ...values,
+              articleBody,
+              lng:i18n.language,
+              attachedImages: articleImages}})
         })
     }} >Save</Button>
   </>}>
@@ -99,7 +114,7 @@ export const ArticleFrom = (props) => {
           </Form.Item>
           </Card>
           
-            <ArticleImages article={article} />
+            <ArticleImages article={article} onImages={images=>setArticleImages(images)} />
           
         </Col>
       </Row>

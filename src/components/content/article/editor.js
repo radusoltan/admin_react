@@ -3,6 +3,11 @@ import { useEffect, useState } from "react";
 
 export const BodyEditor = ({initialValue,onBodyEdit,images}) => {
   const [value,setValue] = useState()
+
+  const image_list = images?.map(({ name, path }) => ({
+    title: name,
+    value: `http://nginx.local/${path}`
+  }))
   
   // const image_list = 
 
@@ -38,10 +43,7 @@ export const BodyEditor = ({initialValue,onBodyEdit,images}) => {
           }
         });
       },
-      image_list: images.map(({ name, path }) => ({
-        title: name,
-        value: `http://nginx.local/${path}`
-      })),
+      image_list,
       image_advtab: true,
       a11y_advanced_options: true,
       content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }'

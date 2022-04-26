@@ -24,6 +24,14 @@ export const ImageUploader = ({visible,article,onCancel,onOk}) => {
     accept: 'image/*'
   }
 
+  useEffect(()=>{
+    if(uploadSuccess){
+      onOk(
+        uploadData.map(({id})=>(id))
+      )
+    }
+  },[uploadSuccess])
+
   const handleUpload = ()=>{
     // console.log(imageList)
     const body = new FormData()
