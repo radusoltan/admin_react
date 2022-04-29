@@ -7,67 +7,58 @@ import {
   DeleteOutlined,
   FileImageOutlined
 } from "@ant-design/icons"
-import { useDetachArticleImagesMutation, useGetArticleImagesQuery } from "../../../services/images"
+import { useDetachArticleImagesMutation, useGetArticleImagesQuery, useSetArticleMainImageMutation } from "../../../services/images"
 import { PlaceImages } from "./placeImages"
+import toast, { Toaster } from 'react-hot-toast'
 
-export const ArticleImages = ({article,onImages}) => {
+export const ArticleImages = ({article}) => {
+  // console.log('Article Images')
+  // console.log(images)
+
+  const { data: images, isSuccess: imagesSuccess, isLoading: imagesIsLoading } = useGetArticleImagesQuery(article)
+  
+  const [detachArticleImages, { data: detachData, isSuccess: detachIsSuccess }] = useDetachArticleImagesMutation()
+  const [setArticleMainImage] = useSetArticleMainImageMutation()
 
   const [upload,setUpload] = useState(false)
-  const [placeIamge,setPlaceImage] = useState(false)
-  const [mainImage,setMainImage] = useState()
-  
-  const {data,isLoading, isSuccess} = useGetArticleImagesQuery(article)
+  const [place,setPlace] = useState(false)
+  const [edit,setEdit] = useState(false)  
 
-  const [detachArticleImages,{data:detachData,isSuccess:detachIsSuccess}] = useDetachArticleImagesMutation()
-
-  const detachImage = id => {
-    detachArticleImages({article,id})
-  }
-  
-  useEffect(()=>{
-    if(detachIsSuccess){
-      onImages(
-        detachData.map(({id})=>(id))
-      )
-    }
-    if (isSuccess){
-      data.map(({id,isMain})=>{
-        if (isMain){
-          setMainImage(id)
-        }
-      })
-    }
-  },[detachIsSuccess,isSuccess])
-
-  if (isLoading){
+  if (imagesIsLoading){
     return <Spin />
   }
+  
 
-  const images = data.map(({ id, name, path, width, height }) => (<div key={id} style={{
+
+  const imgs = images?.map(({ id, name, path, width, height }) => (<div key={id} style={{
     margin: "0 0 10px 0",
     border: "1px solid #CCC",
-    padding: "10px",}}>
-      <Image 
-        src={`http://nginx.local/${path}`} 
-        width={67} 
-        preview={false} 
-      />
-    
+    padding: "10px",
+  }}>
+    <Image
+      src={`http://nginx.local/${path}`}
+      width={67}
+      preview={false}
+    />
+
     <DeleteOutlined
       style={{ marginLeft: "auto", fontSize: 12, float: "right" }}
-      onClick={() => detachImage(id)}
+      onClick={() =>{
+        detachArticleImages({ article, id })
+      }}
     />
     <span style={{
       padding: "0 0 0 10px"
     }}>{`${width} x ${height}`}</span>
-    
+
   </div>))
-  
-  const buttons = images.length === 0 ? (
+
+
+const buttons = images?.length === 0 ? (
     <Button
       style={{ margin: "0 10px 10px 0" }}
       icon={<UploadOutlined />}
-      onClick={()=>setUpload(true) }
+      onClick={() => setUpload(true)}
     >
       Upload
     </Button>
@@ -90,29 +81,40 @@ export const ArticleImages = ({article,onImages}) => {
       <Button
         style={{ margin: "0 10px 10px 0" }}
         icon={<FileImageOutlined />}
-        onClick={() => setPlaceImage(true)}
+        onClick={() => {
+          setPlace(true)
+        }}
       >
         Place
       </Button>
-    </>
-  )
+    </>)
 
   return <Card extra={buttons} >
     {
-      images
+    imgs
     }
-    <ImageUploader 
-      article={article} 
-      visible={upload} 
-      onOk={images=>{
-        setUpload(false)
-        onImages(images)
+    <ImageUploader
+      visible={upload}
+      article={article}
+      onOk={()=>{
+        toast.success('Images uploaded successfully!')
+        setTimeout(()=>{
+          setUpload(false)
+        },2000)
+        
       }}
-      onCancel={()=>{
-        setUpload(false)
-      }}
+      onCancel={()=>setUpload(false)}
     />
-    <PlaceImages visible={placeIamge} images={data} article={article} onCancel={()=>setPlaceImage(false)} />
+    <PlaceImages 
+      visible={place} 
+      onCancel={() => { setPlace(false) }}
+      images={images}
+      article={article}
+      // setMainImage={image=>{
+      //   setArticleMainImage({article,image})
+      // }} 
+    />
+    <Toaster />
   </Card>
 
 }

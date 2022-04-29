@@ -64,10 +64,6 @@ export const imageApi = createApi({
       }),
       // invalidatesTags: result
     }),
-    getMainArticleImage: build.query({
-      query: (article) => createRequest(`/article/${article}/main-image`),
-      // providesTags: result => console.log()
-    }),
     getMainImageRenditions: build.query({
       query: (image) => createRequest(`/image/${image}/renditions`)
     })
@@ -79,6 +75,4 @@ export const {
   useDetachArticleImagesMutation,
   useGetArticleImagesQuery,
   useSetArticleMainImageMutation,
-  useGetMainArticleImageQuery,
-  useGetMainImageRenditionsQuery
 } = imageApi

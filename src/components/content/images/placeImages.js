@@ -1,111 +1,199 @@
 import { Modal, Row, Radio, Image, Divider, Button, Col, Card } from "antd"
-import { useEffect, useState } from "react"
-import { useSetArticleMainImageMutation, useGetMainArticleImageQuery, useGetMainImageRenditionsQuery } from "../../../services/images"
+import { useEffect, useState, useRef } from "react"
+import { useSetArticleMainImageMutation,useGetArticleImagesQuery } from "../../../services/images"
 import { Cropper } from "./cropper"
+import {
+  centerCrop,
+  makeAspectCrop,
+  Crop,
+  PixelCrop,
+} from "react-image-crop"
+// import { useDebounceEffect } from "./useDebounceEffect"
+// import { imgPreview } from "./imagePreview"
 
-export const PlaceImages = ({visible,images,article, onCancel})=>{
+const centerAspectCrop = (
+  mediaWidth,
+  mediaHeight,
+  aspect
+) => (centerCrop(
+  makeAspectCrop(
+    {
+      unit: 'px',
+      width: mediaWidth,
+    },
+    aspect,
+    mediaWidth,
+    mediaHeight,
+  ),
+  mediaWidth,
+  mediaHeight,
+))
 
-  console.log('place',images);  
+
+
+export const PlaceImages = ({visible, images, onCancel, article})=>{
+
+  // console.log('place',images)
   
-  const main = images.find(({isMain})=>isMain)
+  const main = images?.find(({isMain})=>isMain)
 
-  const [mainImage,setMainImage] = useState(main.id)
-  const [rendition,setRendition] = useState()
+  const [selectedMainImage,setSelectedMainImage] = useState(main.id)
   
-  const renditions = images.find(({id})=>id===mainImage).thumbs
+  const [place,setPlace] = useState(true)
+  const [crop,setCrop] = useState(false)
 
-  const [isPlace,setIsPlace] = useState(true)
-  const [isCrop,setIsCrop] = useState(false)
+  const { thumbs } = images?.find(({ id }) => id === selectedMainImage)
+  const [selectedRendition, setSelectedRendition] = useState(thumbs[0].id)
 
-  const [setArticleMainImage,{data:setMainData,isSuccess: setMainSuccess}] = useSetArticleMainImageMutation()
-  
+  const [setArticleMainImage, { data:setMainData, isSuccess: setMainSuccess }] = useSetArticleMainImageMutation()
+
 
   useEffect(()=>{
     if (setMainSuccess){
       const {image_id} = setMainData
-      setMainImage(image_id)
+      // setMainImage(image_id)
+      setSelectedMainImage(image_id)
     }
-  }, [setMainSuccess])  
+  }, [setMainSuccess])
 
   const handleCancel = () => {
-    setIsCrop(false)
-    setIsPlace(true)
     onCancel()
+    setCrop(false)
+    setPlace(true)
   }
 
-  const setMain = () => {
-    setArticleMainImage({article,image:mainImage})
+  const cardClick = ({ rendition_id, selectedMainImage}) => {
+    setCrop(true)
+    setPlace(false)
+    setSelectedRendition(rendition_id)
   }
-
-  const finishPlace = ()=>{
-    console.log('finish place')
-  }
-
-  const doneEditing = ()=>{
-    setIsCrop(false)
-    setIsPlace(true)
-  }
-
-  const button = !isCrop ? (<Button onClick={finishPlace}>Finish</Button>) :
-    (<Button onClick={doneEditing}>Done Editing</Button>)
   
   
 
-  const rends = renditions?.map(({name, id, path})=>(<Col span={6} key={id}>
-    <div className="rendition-container">
-      <figure onClick={() => {
-        setIsPlace(false)
-        setIsCrop(true)
-        setRendition(id)
-      }}> 
+  const thumbnailsList = thumbs.map(({ rendition_id, name, path }) => <Col span={12} key={rendition_id}>
+    <Card hoverable onClick={()=>cardClick({rendition_id,selectedMainImage})}>
+      <figure>
         <Image src={`${process.env.REACT_APP_PUBLIC_BASE_URL + path}`} preview={false} />
         <figcaption>{name}</figcaption>
       </figure>
-      
+    </Card>
+  </Col>)
+
+  const imagesList = images?.map(({ id, path, name, width, height }) => (<Col span={6} key={id}>
+    <div className="rendition-container">
+      <figure>
+        <Image
+          src={process.env.REACT_APP_PUBLIC_BASE_URL + path}
+          preview={false}
+        />
+        <Radio
+          value={id}
+          style={{ float: 'right' }}
+          checked={id === selectedMainImage}
+          onChange={()=>{
+            setSelectedMainImage(id)
+            setArticleMainImage({article,image:id})
+          }}
+        />
+        <figcaption>
+          <label>{`${width}x${height}`}</label>
+        </figcaption>
+      </figure>
     </div>
   </Col>))
 
-  const thumbs = images.map(({ id, path, name, width, height }) => (<Col span={6} key={id}>
-    <div className="rendition-container" >
-    <figure>
-        <Image src={`${process.env.REACT_APP_PUBLIC_BASE_URL + path}`} style={{
-        margin: '0 0 2rem 0'
-      }} preview={false} />
-      <Radio value={id} style={{float:'right'}} onChange={()=>{
-        setMainImage(id)
-      }} checked={id===mainImage} />
-      <figcaption>
-        <label>
-          {`${width}x${height}`}
-        </label>
-      </figcaption>
-    </figure>
-  </div>
-  </Col>))  
-
   return <Modal 
     visible={visible} 
-    width={'90%'}
+    width={'70%'}
     onOk={()=>{}}
     onCancel={handleCancel}
     footer={null}
   >
-    <Card extra={button} title={'Place Images'}>
-      <div style={{ display: `${isPlace ? 'block' : 'none'}` }}>
+    
+    <Card extra={<>Some extra</>} title={'Place Images'}>
+      <div style={{ display: `${place ? 'block' : 'none'}` }}>
         <Row>
           {
-            rends
+            thumbnailsList
           }
-          </Row>
-          <Divider orientation="left" orientationMargin="0"><Button onClick={setMain}>Set deault</Button></Divider>
-        <Row>{
-        thumbs
-        }</Row>
+        </Row>
+        
+        <Divider orientation="left" orientationMargin="0" />
+        <Row>
+          {
+            imagesList
+          }
+        </Row>
       </div>
+      <div style={{ display: `${crop ? 'block' : 'none'}` }}>
+        <Row>
+            <Cropper 
+              image={ images.find(({ id }) => id === selectedMainImage) }
+              rendition={  selectedRendition }
+              thumbs={thumbs}
+            />
+        </Row>
+      </div>
+      {/* 
       <div style={{display: `${isCrop ? 'block':'none'}`}}>
-        <Cropper images={images} renditions={renditions} mainImage={mainImage} rendition={rendition} />
-      </div>
+        <Row>
+          <Col span={6}>
+            {
+              renditions.map(({id,width,specs,height,name, path})=>(
+                <div
+                  key={id}
+                  onClick={() => {
+                    setRendition(id)
+                  }}
+                >
+                  <Card
+                    hoverable
+                    bordered={true}
+                    bodyStyle={{
+                      background: `${id === rendition ? '#f0f2f5' : '#fff'}`
+                    }}
+                    cover={
+                      <img
+                        ref={imgRef}
+                        src={`http://nginx.local/${path}`}
+                        style={{ padding: "10px" }}
+                        alt={name}
+                      // crossorigin="anonymous"
+                      />
+                    }
+                  >
+                    <Card.Meta title={name} description={`${width} x ${height}`} />
+                  </Card>
+                </div>
+              ))
+            }
+            <div>
+              
+            </div>
+          </Col>
+          <Col span={18}>
+            <Cropper 
+              image={images.find(({ id }) => id === mainImage)} 
+              rendition={rendition} 
+              aspect={selectedRendition.specs} 
+              crop={selectedRendition} 
+              onCrop={c => console.log('place onCorp',c)}
+              preview={(c,p) => {
+                cropImage(p)
+                setCompletedCrop(p)
+              }}
+            />
+          </Col>
+        </Row>
+        
+      </div> */}
     </Card>
        
   </Modal>
+}
+
+function toBlob(canvas) {
+  return new Promise((resolve) => {
+    canvas.toBlob(resolve)
+  })
 }

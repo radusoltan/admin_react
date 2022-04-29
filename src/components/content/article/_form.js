@@ -29,6 +29,7 @@ export const ArticleFrom = (props) => {
     }
 
     if (imagesSuccess) {
+      console.log('_form images',images)
       setArticleImages(
         images.map(({id})=>(id))
       )
@@ -44,7 +45,7 @@ export const ArticleFrom = (props) => {
 
   const {title,lead} = translations.find(({locale})=>locale===i18n.language)
   
-  console.log('_form articleImages',articleImages)
+  // console.log('_form articleImages',articleImages)
 
   return <Card extra={<>
     <Button onClick={()=>{
@@ -114,7 +115,10 @@ export const ArticleFrom = (props) => {
           </Form.Item>
           </Card>
           
-            <ArticleImages article={article} onImages={images=>setArticleImages(images)} />
+            <ArticleImages 
+              article={article}
+              // images={images}
+            />
           
         </Col>
       </Row>

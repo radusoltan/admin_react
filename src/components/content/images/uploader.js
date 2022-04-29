@@ -1,14 +1,13 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Upload, Modal } from "antd"
 import {
   InboxOutlined,
 } from "@ant-design/icons"
 import { useUploadArticleImagesMutation } from "../../../services/images"
-import toast, { Toaster } from 'react-hot-toast'
 
 export const ImageUploader = ({visible,article,onCancel,onOk}) => {
   const [imageList, setImageList] = useState([])
-  const [uploadArticleImages,{isLoading:uploadIsLoading,data:uploadData,isSuccess:uploadSuccess}] = useUploadArticleImagesMutation(article)
+  const [uploadArticleImages] = useUploadArticleImagesMutation(article)
   const uploadProps = {
     onRemove: file => {
       const index = imageList.indexOf(file)
@@ -24,23 +23,13 @@ export const ImageUploader = ({visible,article,onCancel,onOk}) => {
     accept: 'image/*'
   }
 
-  useEffect(()=>{
-    if(uploadSuccess){
-      onOk(
-        uploadData.map(({id})=>(id))
-      )
-    }
-  },[uploadSuccess])
-
   const handleUpload = ()=>{
-    // console.log(imageList)
     const body = new FormData()
     imageList.forEach(file=>{
       body.append('images[]',file)
     })
     uploadArticleImages({article,body})
-    toast.success('image uploaded')
-    onOk(uploadData)
+    onOk()
   }
 
   return <Modal 

@@ -1,134 +1,163 @@
-import { Col, Row, Card } from "antd"
-import { useEffect, useState } from "react"
+import React, { useRef, useEffect, DependencyList } from "react"
+import { Col, Row, Card, Button, Image } from "antd"
+import { useState } from "react"
 import ReactCrop from "react-image-crop"
-import "react-image-crop/dist/ReactCrop.css"
-
-const basePath = 'http://nginx.local/'
-
-export const Cropper = ({ images, mainImage, renditions, rendition}) => {
-
-  console.log('Cropper')
-
-  const imgTocrop = images.find(({ id }) => id === mainImage)
+import 'react-image-crop/dist/ReactCrop.css'
+import { canvasPreview } from "./canvasPreview"
 
 
-  const selected = renditions.find(({id})=>id===rendition)
 
-  console.log(selected);
+export const Cropper = ({ image, rendition, thumbs}) => {
 
-  const [croppedImage, setCroppedImage] = useState(undefined)
-  const [cropConfig, setCropConfig] = useState(
-    // default crop config
-    {
-      unit: "%",
-      width: 100,
-      // height: 9,
-      aspect: 16 / 9,
-    }
-  )
-  const [imageRef, setImageRef] = useState()
+  console.log('Cropper image')
   
-  const onImageCropped = image => {
-
-  }
-
-  async function cropImage(crop) {
-    if (imageRef && crop.width && crop.height) {
-      const croppedImage = await getCroppedImage(
-        imageRef,
-        crop,
-        "croppedImage.jpeg" // destination filename
-      );
-
-      // calling the props function to expose
-      // croppedImage to the parent component
-      setCroppedImage(croppedImage);
-    }
-  }
-
-  function getCroppedImage(sourceImage, cropConfig, fileName) {
-    // creating the cropped image from the source image
-    const canvas = document.createElement("canvas");
-    const scaleX = sourceImage.naturalWidth / sourceImage.width;
-    const scaleY = sourceImage.naturalHeight / sourceImage.height;
-    canvas.width = cropConfig.width;
-    canvas.height = cropConfig.height;
-    const ctx = canvas.getContext("2d");
-
-    ctx.drawImage(
-      sourceImage,
-      cropConfig.x * scaleX,
-      cropConfig.y * scaleY,
-      cropConfig.width * scaleX,
-      cropConfig.height * scaleY,
-      0,
-      0,
-      cropConfig.width,
-      cropConfig.height
-    );
-
-    return new Promise((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        // returning an error
-        if (!blob) {
-          reject(new Error("Canvas is empty"));
-          return;
+  const renditions = [
+    {
+      name: 'article',
+      width: 1200,
+      height: 630,
+      aspect: 1.9,
+      id: 1,
+      coords: {
+          unit: "%",
+          x: 0,
+          y: 0,
+          width: 100,
+          height: 93.5672514619883
         }
+    },
+    {
+      name: 'important',
+      width: 1170,
+      height: 450,
+      aspect: 2.6,
+      id: 2,
+      coords: {
+        unit: "%",
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 68.37606837606837
+      }
+    }
+  ]
 
-        blob.name = fileName;
-        // creating a Object URL representing the Blob object given
-        const croppedImageUrl = window.URL.createObjectURL(blob);
+  
 
-        resolve(croppedImageUrl);
-      }, "image/jpeg");
-    });
+  const imgRef = useRef(null)
+  const previewCanvasRef = useRef(null)
+
+  const { Meta } = Card
+  const [completedCrop, setCompletedCrop] = useState()
+  const [selectedRendition,setSelectedRendition] = useState(rendition)
+  const { width, height, aspect, coords } = renditions.find(({ id }) => id === selectedRendition)
+  const [mainAspect,setMainAspect] = useState(parseFloat(aspect))
+  const [crop, setCrop] = useState(
+    coords
+  )
+  
+  const selectRendition = id =>{
+    setSelectedRendition(id)
+    const {coords, aspect} = renditions.find(rendition=>rendition.id===id)
+    setMainAspect(parseFloat(aspect))
+    console.log('new coords',coords)
   }
 
-  const cropComplete = (c) => {
-    // console.log('onComplete',c)
-  }
+  useDebounceEffect(
+    async () => {
+      if (
+        completedCrop?.width &&
+        completedCrop?.height &&
+        imgRef.current &&
+        previewCanvasRef.current
+      ) {
+        canvasPreview(
+          imgRef.current,
+          previewCanvasRef.current,
+          completedCrop,
+          1
+        )
+      }
+    },
+    100,
+    [completedCrop]
+  )
+  
+  console.log(selectedRendition);
 
   return <>
-    <Row>
-      <Col span={6}>
-        {
-          renditions.map((rendition) => (
-            <div
-              onClick={() => {
-                setCropConfig({
-                  width: rendition.width,
-                  aspect: rendition.width / rendition.height,
-                  unit: "%",
-                });
+    <Col span={6}>
+      {
+        thumbs.map(({path,id,rendition_id, name})=>(
+         
+          completedCrop && rendition_id === selectedRendition ? (<Card
+              bodyStyle={{
+                background: `${selectedRendition === rendition_id ? '#f0f2f5' : '#fff'}`
               }}
+              onClick={() => {
+                selectRendition(rendition_id)
+              }}
+              key={id}
+              hoverable
+              cover={ <canvas ref={previewCanvasRef} /> }
+
             >
-              <Card
-                hoverable
-                cover={
-                  <img
-                    src={croppedImage? croppedImage : `http://nginx.local/${imgTocrop.path}`}
-                    style={{ padding: "10px" }}
-                    alt={imgTocrop.name}
-                    crossorigin="anonymous"
-                  />
-                }
-              >
-                <Card.Meta title={rendition.name} description={`1200 x 630`} />
-              </Card>
-            </div>
-          ))
-        }
-      </Col>
-      <Col span={18}>
+              <Meta title={name} />
+            </Card>) : (<Card
+              bodyStyle={{
+                background: `${selectedRendition === rendition_id ? '#f0f2f5' : '#fff'}`
+              }}
+              onClick={() => {
+                selectRendition(rendition_id)
+              }}
+              key={id}
+              hoverable
+              cover={<Image src={process.env.REACT_APP_PUBLIC_BASE_URL + path} preview={false} />}
+
+            >
+              <Meta title={name} />
+            </Card>)
+          
+        ))
+      }
+    </Col>
+    <Col span={18}>
+      <Card>
         <ReactCrop
-          crop={cropConfig}
-          src={`http://nginx.local/${imgTocrop.path}`}
-          onImageLoaded={(imageRef) => setImageRef(imageRef)}
-          onComplete={(cropConfig) => cropImage(cropConfig)}
-          onChange={(c) => setCropConfig(c)}
-        />
-      </Col>
-    </Row>
+          crop={crop}
+          onChange={(c, percentCrop) => setCrop(percentCrop)}
+          aspect={mainAspect}
+          onComplete={(c,p) => {
+            setCompletedCrop(c)
+            console.log(p);
+          } }        
+        >
+          <img /*onLoad={onImageLoad}*/ ref={imgRef} src={`http://nginx.local/${image.path}`} />
+      </ReactCrop>
+      
+      <Button onClick={()=>{
+        console.log(completedCrop);
+      }} >Crop</Button> {/**/}
+      </Card>
+    </Col>
+    
+    
   </>
 
+}
+
+const useDebounceEffect = (
+  fn,
+  waitTime,
+  deps
+) => {
+  useEffect(() => {
+    const t = setTimeout(() => {
+      fn.apply(undefined, deps)
+    }, waitTime)
+
+    return () => {
+      clearTimeout(t)
+    }
+  }, deps)
 }
